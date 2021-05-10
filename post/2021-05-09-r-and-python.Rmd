@@ -1,6 +1,6 @@
 ---
 title: R and Python
-author: ''
+author: 'David A. Pereira'
 date: '2021-05-09'
 slug: r-and-python
 categories: []
