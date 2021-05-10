@@ -1,0 +1,128 @@
+---
+title: "Project 1"
+author: "David A. Pereira"
+date: "4/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", 
+    warning = F, message = F, tidy = TRUE, tidy.opts = list(width.cutoff = 60), 
+    R.options = list(max.print = 100))
+
+```
+
+
+The inspiration behind picking these two datasets was that they were main focus in life during quarantine, Netflix and keeping track of COVID-19. My Netflix data set has every show I watched along with the date, while my US vacciantion dataset has the total vaccinations, people vaccinated, and the daily vaccinations given from December 12 2020 until April 2nd 2021.The Netlfix viewing history was graciously given to me by my professor, which I acquired through Netflix. The US vaccination data was aquired through the website kaggle.com. Both datasets are interesting to me as I inquire whether the my Netflix viewing trends somehow correlate with US vaccination rate, such as whether I began binging a show whenever US vaccination rates began to increase substantially. Although I expect to see little correlation between the two, I am interested in finding out the US vaccination trends and if they changed along with my viewing tendencies, as well viewing the trends when I myself was vaccinated. Note: The data in the column "daily_vaccinated" refers only to those who received the Johnson&Johnson vaccine which is one dose, however all other data columns are for the country as a whole regardless of vaccine.
+```{R}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(cluster)
+Netflix_History_<-read.csv("Netflix1.csv")
+US_Vaccinations_<-read.csv("USVaccinations1.csv")
+Netflix_History_$date <-as.Date(Netflix_History_$date, format = '%m/%d/%y')
+US_Vaccinations_$date <- as.Date(US_Vaccinations_$date, format='%m/%d/%y' )
+
+```
+
+```{R}
+Net <- Netflix_History_
+US <- US_Vaccinations_
+joined<-Net%>%inner_join(US)
+```
+I joined both datasets using inner_join because my Netflix data dates greatly outnumbers the US vaccination data. Also, the data is more parsimonious and cohesive with an inner join as there are minimal NA's compared to the other types of joins. To start, Netlfix History had 631 obervations beginning in 3/1/2020, while US Vaccination had 105 observations, starting at 12/20/20. This resulted in a large number of observation lost in the Netlfix history dataset, which I surrendered because I'm more interested in my viewing history when the vaccinations already started. 
+```{R}
+icarly<-joined %>%pivot_longer(contains("_"))
+```
+Removing the "country" variable becasue it is redundant
+```{R}
+stateless<-joined %>% select(-country)
+```
+Seeing the date where vaccination is crossed around 100,000,000 , and what I was watching
+```{R}
+stateless %>% filter(between(total_vaccinations, 90999999,110000000))
+```
+Seeing when the most daily vaccinations was, (and what I was watching)
+```{R}
+stateless %>% arrange(desc(daily_vaccinations))
+```
+Seeing the new number of people inoculated after being vaccinated by the J&J each day I watched Netflix
+```{R}
+inoc<-stateless %>% mutate(Inoculated = people_vaccinated+daily_vaccinations)
+```
+Seeing the average number of daily vaccinations from 12/20/20 until 4/3/2021
+```{R}
+inoc %>% summarize(mean(daily_vaccinations, na.rm=T))
+```
+Seeing the avergae number of dailt vaccinations based on what episode I was watching
+```{R}
+show<-inoc %>% group_by(Title) %>% summarize(show_mean= mean(daily_vaccinations, na.rm=T))
+```
+Creating a categorical variable for when daily vaccinations reached 100,000/day, between 200,000 and 100,000, and greater than 200,000/day.
+```{R}
+tiered<-inoc %>% mutate(tier= case_when(daily_vaccinations>2000000 ~ "fast", daily_vaccinations<= 2000000 & 1000000 <=daily_vaccinations ~ "med", daily_vaccinations< 1000000 ~ "slow"))
+```
+Creating a categorical variable for stages in Inoculation 0-25M being low, 25-50 being middle, and 50-100 being high.
+```{R}
+narcos<-tiered%>% mutate(stage= case_when(Inoculated> 50000000 ~ "high", Inoculated <= 50000000 & 25000000 <=Inoculated ~ "middle", Inoculated <25000000 ~ "low"))
+```
+Summary statistics for 'total_vaccinations' numerical variable grouped by the 'tier' categorical variable.
+```{R}
+tiered%>%group_by(tier) %>% summarize(mean_totalvacc=mean(total_vaccinations,na.rm=T), sd_totalvacc=sd(total_vaccinations,na.rm=T),var_totalvacc=var(total_vaccinations,na.rm=T), min_totalvacc=min(total_vaccinations,na.rm=T), max_totalvacc=max(total_vaccinations,na.rm=T))
+```
+Summary statistics for 'Inoculated' numeric variable grouped by 'stage' categorical variable. 
+```{R}
+narcos%>% group_by(stage)%>% summarize(mean_Inoc=mean(Inoculated,na.rm=T), sd_Inoc=sd(Inoculated,na.rm=T), var_Inoc=var(Inoculated,na.rm=T), min_Inoc=min(Inoculated,na.rm=T), max_Inoc=max(Inoculated,na.rm=T))
+```
+Summary statistics for 'people_vaccinated' numerical variable grouped by 
+both 'stage' and 'tier' categorical variables. 
+```{R}
+narcos%>% group_by(stage,tier)%>% summarize(mean_pplvac=mean(people_vaccinated,na.rm=T), sd_pplvac=sd(people_vaccinated,na.rm=T), quantile_pplvac=quantile(people_vaccinated,na.rm=T), min_pplvac=min(people_vaccinated,na.rm=T), max_pplvac=max(people_vaccinated,na.rm=T))
+```
+```{R}
+narcos%>% select_if(is.numeric) %>% cor %>% as.data.frame() %>% rownames_to_column %>% pivot_longer(-1) %>% na.omit %>%ggplot(aes(rowname,name, fill=value)) +geom_tile() + geom_text(aes(label=round(value,2)))+xlab("")+ylab("")+coord_fixed()
+cormat <- narcos %>% select_if(is.numeric) %>% cor(use="pair")
+cormat
+```
+```{R}
+ggplot(data= narcos, aes(x=date, y=daily_vaccinations)) +geom_point(size=1, aes(color=tier)) + theme_minimal() + geom_smooth(method="lm", size=.5) +ggtitle("Tiered daily vaccinations over quarantine")
+```
+As we can see from the graph above the daily vaccination rate has been steadily increasing throughout the months. The 'slow' tier ended towards the middle of Feburary while the 'med' tier ended in early March. From the linear regression line we can clearly see a positive regression line correlating with the data, clearly signifying the a positive increase in the amount of vaccinations administered in the US over a few months. 
+```{R}
+avgdaily<-narcos%>%group_by(tier)%>% mutate(avg_dailyvac=mean(daily_vaccinations,na.rm=T)) 
+
+ggplot(avgdaily, aes(x=tier, y=daily_vaccinations))+ geom_boxplot() +geom_jitter(alpha=.3, aes(color=stage)) + ggtitle("Visualization of daily vaccinations")
+
+``` 
+As seen with the above graph, tiers were distributed evenly, with stages existing mostly between bosxplots except for the 'high' boxplot. There exists outliers, however mostly within the 'high' boxplot. Overall the 'med' boxlot was the most varied in terms of stages with all stages existing within the 'med' boxplot, signifying rapid change in vaccinations durin that time period. 
+k-means
+```{R}
+
+library(cluster)
+
+na.omit(avgdaily)
+avgdaily[complete.cases(avgdaily),]
+toa<-avgdaily%>% select(total_vaccinations, daily_vaccinations,Inoculated, -tier)
+
+pamdat<-(toa)%>% select(daily_vaccinations, total_vaccinations, Inoculated)
+
+pamdat1<-na.omit(pamdat)
+sil_width<-vector()
+k=2
+for(i in 2:10){pamfit <- pam(pamdat1, k=i)
+sil_width[i]<- pamfit$silinfo$avg.width
+}
+
+ggplot() +geom_line(aes(x=1:10, y=sil_width))+scale_x_continuous(name="k", breaks=1:10)
+
+pam1<-avgdaily%>%pam(k=2)
+pam1
+pam1
+plot(pam1, which=2)
+```
+In terms of Dimensionality Reduction I performed the kmeans/clustering procedure in order to find the distances between my centers. The graph shows a high silhouette width for 2 clusters. When interpreting the average silhouette width we received a value of .52, which signifies a reasonable structure between the data. 
+
+
+
+

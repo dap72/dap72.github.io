@@ -1,0 +1,430 @@
+---
+title: "Project 2 Server"
+author: "David A. Pereira"
+date: "5/8/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{R}
+library(tidyverse)
+library(cluster)
+library(lmtest)
+library(ggplot2)
+library(cluster)
+library(plotROC)
+Beaut<-read.csv("TeachingRatings.csv")
+```
+One of the datasets I chose was 'California Test Score Data' which contains data on test performance, school characteristics, and student demographic backgrounds for K6/8 school districts in California for the 1998-1999 scholastic year. This data set contiains 420 observations on 14 variables, and the variables in this dataset include: 'district'= ditrict code, 'school'=school name, 'county'=county, 'grades'= grade span of district, 'students' = total enrollment, 'teachers'= # of teachers, 'calworks'= % qualifying for income assitance, 'lunch' = % qualifying for reduced lunch, 'computer'= number of computers, 'expenditure'= expenditure per student, 'income'= district avg income, 'english'= % of english learners, 'read'= avg reading score, 'math'= average math score. The second dataset I chose was 'Impact of Beauty on Instructor's Teaching Ratings', which includes data on course evals, course characters, and prof characters for 463 courses for the 2000-2002 scholastic year here at the UNiversity of Texas at Austin! This data frame has 463 observations on 13 variables which include: 'minority'= does the instructor belong to a minority (non-Caucasian), 'age'=prof's age, 'gender'=prof's gender, 'credits'= is the course a single-credit elective?, 'beauty'= rating of prof's physical appearance by a panel of six students, averaged across six panelists, shifted to have a mean of zero, 'eval'= course overall teaching evaluation score on a scale of 1 (unsatisfactory) to 5 (excellent), 'division'= upper or lower division course, 'native'= is prof a native English speaker, 'tenure'= is the prof on tenure track?, 'students'= # of students who participated in the evaluation, 'allstudents'= # of students enrolled in the course, 'prof'= prof identifier. 
+
+
+MANOVA
+```{R}
+library(rstatix)
+library(mvtnorm)
+library(ggExtra)
+library(tidyverse)
+library(sandwich)
+library(lmtest)
+library(pROC)
+library(dplyr)
+library(glmnet)
+Beaut$eval%>%sort
+samp1<-sample(Beaut$eval,replace=T)
+sort(samp1)
+
+group<- Beaut$gender
+DVs<-Beaut %>% select(beauty,eval,students,allstudents)
+#Multivariate normality test
+sapply(split(DVs,group),mshapiro_test)
+#Homogeneity of covariances test
+lapply(split(DVs,group),cov)
+
+sapply(split(DVs, group), mshapiro_test)
+
+
+man<-manova(cbind(beauty,eval,students,allstudents)~gender,data=Beaut)
+
+summary(man)
+summary.aov(man)
+
+Beaut %>% group_by(gender) %>% summarize(mean(beauty), mean(eval), mean(students), mean(allstudents))
+
+
+pairwise.t.test(Beaut$beauty, Beaut$gender,p.adj="none")
+pairwise.t.test(Beaut$eval, Beaut$gender, p.adj="none")
+pairwise.t.test(Beaut$students, Beaut$gender, p.adj="none")
+pairwise.t.test(Beaut$allstudents, Beaut$gender, p.adj="none")
+```
+A one-way MANOVA  was conducted to determine the effect of professor gender (male, female) on four dependent variables (beauty,eval,students,allstudents). The mshapiro test was significant for the data suggesting mutivariate normality, and a formal test of homogeneity of covariance also resulted in a significant p-value. No univariate or multivariate outliers were evident and MANOVA was considered to be an appropriate analysis technique. 
+
+Univariate ANOVA's for each dependent variable were conducted as follow-up tests to the MANOVA. 1 MANOVA, 4 ANOVA, and 1 t-test were performed in order to give us the Bonferroni significance value. This resulted in the significant dependant variables being 'beauty' , 'evaluation', and 'allstudents'. The probability of atleast one Type 1 error unadjusted resulted in a significance value of .265 , although the Bonferroni equation gave us a significance value of .0083. 
+
+Significant differences were found in the beauty,eval,and allstudents dependent variables. Beauty: df=1, F=7.4, p=.006 , eval: df=1, F=10.6, p=.001 , allstudents: df=1, F= 7.4, p=.0068.
+
+
+
+Need this!
+```{R}
+class_diag <- function(probs,truth){
+  #CONFUSION MATRIX: CALCULATE ACCURACY, TPR, TNR, PPV
+  
+  if(is.character(truth)==TRUE) truth<-as.factor(truth)
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),factor(truth, levels=c(0,1)))
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup <-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR <-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  n <- length(TPR)
+  auc <- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+
+```
+
+Randomization test:Mean difference
+Null Hypothesis: Mean number of students is the same for male vs. female professors
+Alternative Hypothesis: Mean number of students is different for male vs. female professors
+Firstly, we simulate our own null hypothesis by finsing the mean difference.
+```{R}
+profage<-Beaut%>%group_by(gender)%>%select(age)
+profgen<-profage%>%arrange(gender)
+femage<-c(24,40,42,33,25,48,23,27,25,17,19,19,20,10,21,30,22,26,12,22,10,46,54,44,35,22,64,31,59,47,19,47,33,9,16,18,60,61,23,48,86,76,77,24,24,17,14,37,18,15,40,38,40,52,49,29,37,29,28,21,13,16,24,23,20,29,25,42,34,34,21,29,39,35,34,27,14,23,23,9,30,15,31,12,10,15,7,7,14,8,17,10,12,27,20,31,17,23,33,8,16,24,7,25,24,24,20,12,25,26,24,35,21,35,18,20,27,16,17,24,14,23,19,18,23,10,10,10,7,14,109,54,51,61,102,58,46,53,19,41,25,51,18,26,28,13,174,171,10,166,17,9,14,70,49,32,35,59,45,34,50,67,38,93,36,29,23,36,30,67,36,17,15,10,16,15,15,21,14,16,20,43,14,19,18,11,18,11,7,24,52,54,28)
+menage<-c(17,55,182,16,18,30,28,30,23,100,30,15,84,13,12,47,28,10,86,15,20,12,25,15,13,42,28,22,30,57,69,24,85,11,45,22,9,15,23,19,17,46,348,44,10,7,12,13,16,15,85,11,27,98,35,39,111,160,79,176,155,166,186,12,14,22,10,17,16,15,16,16,30,23,13,24,24,25,18,28,25,40,40,18,31,15,23,45,90,27,35,120,20,14,65,95,18,85,113,94,46,80,61,51,22,10,11,15,21,71,36,73,31,23,12,15,11,12,18,10,16,13,5,34,24,11,10,14,12,8,23,10,10,154,12,14,27,10,16,9,21,13,12,14,15,13,7,12,11,8,24,15,31,36,14,13,12,13,12,13,21,49,44,27,49,31,19,27,12,13,81,74,102,94,89,133,22,78,22,27,27,60,36,72,63,16,20,69,98,20,72,22,8,18,5,5,16,9,7,10,15,18,11,10,17,22,18,14,20,21,23,19,20,17,18,20,19,46,39,34,29,27,372,343,380,322,66,40,60,8,12,65,53,58,17,17,13,19,12,12,16,12,14,11,15,6,15,12,21,18,17,19,11,14,16,22,17,67,28,61,49,13,28,67,13,111,62,76,9)
+old<-data.frame(gender=c(rep("female",193),rep("male",269)),attending=c(femage,menage))
+head(old)
+
+old%>%group_by(gender)%>%
+  summarize(means=mean(attending))%>%summarize(`mean_diff`=diff(means))
+
+```
+
+We find that our mean difference is 8.93, meaning females have 8.93 more students than males on average.
+Secondly, we simulate the distribution of the mean difference to see if the null hypothesis was true. We also compare this with the t-test.
+```{R}
+rand_dist<-vector()
+
+
+for(i in 1:5000){
+new<-data.frame(attending=sample(old$attending),gender=old$gender) #scramble columns
+rand_dist[i]<-mean(new[new$gender=="female",]$attending)-   
+              mean(new[new$gender=="male",]$attending)} #compute mean difference (base R)
+
+{hist(rand_dist,main="",ylab=""); abline(v = c(-8.93, 8.93),col="red")}
+
+mean(rand_dist>8.9 | rand_dist< -8.9)
+
+t.test(data=old,attending~gender)
+```
+We see that based on the histogram as well as the t-test, that we reject our null hypothesis, and conclude that the mean difference in attending students is different between men and women professors. 
+
+
+Linear Regression (no interaction/interaction)
+```{R}
+Thor<- lm(eval~ beauty + age, data=Beaut)
+summary(Thor)
+
+Beaut$beauty_c<- Beaut$beauty - mean(Beaut$beauty)
+Beaut$age_c<-Beaut$age - mean(Beaut$age)
+Hulk<- lm(eval~ beauty_c*age_c, data=Beaut)
+summary(Hulk)
+```
+From the above linear regression model we see that for every one unit increase in beauty score, evaluation score increases .13 on average, t=3.973, df=460, p<.001. For every 1 unit increase in age, evaluation score increases by .0002, t=.106, df=460, p>.001.
+From the above linear regression with interaction, we see that for professors with average beauty score and average age, the mean/predicted course evaluation is 4.02. Also, for people with average age, as beauty increased by one unit, course evaluation increased by .152, and for people with average beauty, course evaluation increased by .0006 for every one unit increase in age. The estimated slope for course evaluation for professors with average beauty and average age is .01. 
+
+
+Plotting the regression
+```{R}
+ggplot(Beaut, aes(beauty,age))+ geom_smooth(method="lm", se=F, fullrange=T) + geom_point()+geom_vline(xintercept=0,lty=2)+geom_vline(xintercept=mean(Beaut$beauty))
+
+ggplot(Beaut, aes(beauty_c,age_c))+ geom_smooth(method="lm", se=F, fullrange=T) + geom_point()+geom_vline(xintercept=0,lty=2)+geom_vline(xintercept=mean(Beaut$beauty_c))
+```
+As we see from the graph above, the slope is negative, and it does not change regardless if the dependent variabes are centered or not. 
+
+R^2
+```{R}
+
+cov(Beaut$beauty, Beaut$age)/var(Beaut$beauty)
+SST<-sum((Beaut$age-mean(Beaut$age))^2)
+SSR<-sum((Thor$fitted.values-mean(Beaut$age))^2)
+SSE<-sum(Thor$residuals^2)
+SSR/SST
+summary(Thor)$r.sq
+
+cov(Beaut$beauty, Beaut$age)/var(Beaut$beauty)
+SST1<-sum((Beaut$age-mean(Beaut$age))^2)
+SSR1<-sum((Hulk$fitted.values-mean(Beaut$age))^2)
+SSE1<-sum(Hulk$residuals^2)
+SSR1/SST1
+summary(Hulk)$r.sq
+```
+.0358 of the variation in the outcome can be explained by the model with no interaction, and .0574 for the model with interaction. 
+
+```{R}
+resids1<-Hulk$residuals
+#Linearity
+resids<-Thor$residuals
+fitvals<-Thor$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, color='red')
+#Normality
+ ks.test(resids,"pnorm",mean=0,sd(resids))
+ks.test(resids1,"pnorm",mean=0,sd(resids1))
+
+install.packages("https://github.com/hadley/devtools/archive/v1.7.0.tar.gz",
+                 repos=NULL, method="libcurl")
+
+#Homoskedastic
+Hulk<-lm(eval~beauty_c*age_c, data=Beaut)
+Thor<-lm(eval~beauty+age, data=Beaut)
+bptest(Hulk)
+bptest(Thor)
+
+```
+The no interaction model passes the test of linearity, and homoskedasticty, however it does not pass the normality assumption. 
+
+```{R}
+#Regression results with standard and robust SE's
+coeftest(Thor)[,1:2]
+coeftest(Hulk)[,1:2]
+
+
+coeftest(Thor, vcov=vcovHC(Thor))[,1:2]
+coeftest(Hulk, vcov=vcovHC(Hulk))[,1:2]
+```
+The only difference between the standard and the robust SE's is the standard error, which are lower with the robust SE's. 
+
+
+Bootstrapped SE's
+```{R}
+resids1<-Hulk$residuals
+fitted1<-Hulk$fitted.values
+
+beaut_dat<-sample_frac(Beaut,replace=T)
+
+samp_distn<-replicate(5000,{
+  beaut_dat<-sample_frac(Beaut,replace=T)
+  fit<-lm(eval~beauty_c*age_c, data=beaut_dat)
+  coef(fit)
+})
+#Estimated SE's
+samp_distn%>%t%>%as.data.frame%>%summarize_all(sd)
+
+samp_distn%>%t%>%as.data.frame%>%pivot_longer(1:3)%>%group_by(name)%>%summarize(lower=quantile(value,.025), upper=quantile(value,.975))
+
+resid_resamp<-replicate(5000,{
+  new_resids<-sample(resids,replace=TRUE)
+  Beaut$new_y<-fitted1+new_resids
+  fit<-lm(new_y~beauty_c*age_c,data=Beaut)
+  coef(fit)
+  
+})
+#Estimated SE
+resid_resamp%>%t%>%as.data.frame%>%summarize_all(sd)
+#Empirical 95% CI
+resid_resamp%>%t%>%as.data.frame%>%pivot_longer(1:3)%>%group_by(name)%>%summarize(lower=quantile(value,.025), upper=quantile(value,.975))
+#Bootstrapped (rows)
+samp_distn%>%t%>%as.data.frame%>%summarize_all(sd)
+#Bootstrapped (residuals)
+resid_resamp%>%t%>%as.data.frame%>%summarize_all(sd)
+```
+
+The bootstrapped SEs observations and rows  are larger for the interaction model, meaning they should be chosen over the standard/robust SE's for the model.
+
+
+Logistic regression model (beauty+eval variables)
+```{R}
+Anakin<-Beaut%>%mutate(y=ifelse(gender=="female",1,0))
+Anakin$gender<-factor(Anakin$gender,levels=c("female","male"))
+head(Anakin)
+Han<-glm(y~beauty+eval,data=Anakin,family="binomial")
+coeftest(Han)
+exp(coeftest(Han))
+coef(Han)%>%exp%>%round(5)%>%data.frame
+```
+Interpreting the estimates: if you have a 1 evaluation and a zero beauty score your odds of being female are 10.89, and for every 1 unit increase in beauty score your odds of being female are increased by 1.52, finally for every 1 unit ncrease in evaluation your odds of being female increase by .5.
+
+
+```{R}
+pca1<-princomp(Anakin[c('beauty','eval')])
+Anakin$predictor<-pca1$scores[,1] #grab first PC, call it "predictor"
+
+probs<-predict(Han,type="response")
+
+
+## Confusion matrix
+table(predict=as.numeric(probs>.5),truth=Anakin$y)%>%addmargins
+
+Anakin$logit<-predict(Han,type="link")
+Accuracy=(229+69)/463
+Sensitivity=229/355
+Specificity=69/108
+Precision=229/268
+```
+The proportion of correctly identified professor gender is .643 (Accuracy), the proportion of correctly identified females is .638(specificity), while the proportion of correctly identifies males is .645(sensitivity). The proportion of people classified male who actually are is .854 (precision). 
+
+```{R}
+### AUC
+Han<-glm(y~predictor,data=Anakin,family="binomial") 
+Anakin$prob<-predict(Han,type="response") #save predicted probabilities
+
+ggplot(Anakin, aes(predictor,prob))+geom_point(aes(color=y),alpha=.5,size=3)
+
+ROCplot<-ggplot(Anakin)+geom_roc(aes(d=y,m=prob), n.cuts=0) 
+
+ROCplot
+calc_auc(ROCplot)
+```
+The probability that the fit model will score a randomly drawn positive sample higher than a randomly drawn sample is .559(AUC), which is relatively bad tradeoff between sensitivity and specificity.
+
+
+Logistic regression with multiple variables
+```{R}
+Luke<-Beaut%>%mutate(y=ifelse(gender=="female",1,0),minor=ifelse(minority=="yes",1,0), credit=ifelse(credits=="more",1,0),div=ifelse(division=="upper",1,0),
+                     nat=ifelse(native=="yes",1,0), ten=ifelse(tenure=="yes",1,0))
+Luke$gender<-factor(Luke$gender,levels=c("female","male"))
+Obi<-glm(y~minor+age+credit+eval+div+nat+ten+students+allstudents,data=Luke,family="binomial")
+coeftest(Obi)
+pca2<-princomp(Luke[c('beauty','eval', 'minor','age','credit','eval','div','nat','ten','students','allstudents')])
+Luke$predictor<-pca2$scores[,1] 
+
+Leia<-Luke%>%mutate(prob=predict(Obi,type="response"),prediction=ifelse(prob>.5,1,0))
+classify<-Leia%>%transmute(prob,prediction,truth=y)
+table(prediction=classify$prediction,truth=classify$truth)%>%addmargins
+
+Luke$logit<-predict(Obi,type="link")
+
+coef(Obi)%>%exp%>%round(5)%>%data.frame
+
+Accuracy1=(204+106)/463
+Sensitivity1=106/195
+Specificity1=204/268
+Precision1=204/268
+```
+The proportion of correctly identified professor gender is .670 (Accuracy), the proportion of correctly identified females is .761(specificity), while the proportion of correctly identifies males is .645(sensitivity). The proportion of people classified male who actually are is .761 (precision). 
+
+
+
+```{R}
+#AUC
+Windu<-glm(y~predictor,data=Luke,family="binomial") 
+Luke$prob<-predict(Windu,type="response") 
+
+prob<-predict(Windu,type="response")
+
+v<-class_diag(prob,Luke$y)
+auc(Luke$y,prob)
+ggplot(Luke, aes(predictor,prob))+geom_point(aes(color=y),alpha=.5,size=3)
+
+ROCplot1<-ggplot(classify)+geom_roc(aes(d=truth,m=prob),n.cuts=0)
+
+ROCplot1
+calc_auc(ROCplot1)
+```
+The AUC of the 10-fold CV is .736, which is a fair tradeoff between sensitivity and specificity.
+
+LASSO
+```{R}
+Mundi<-Beaut%>%mutate(y=ifelse(gender=="female",1,0))
+Mundi<-Mundi[sample(nrow(Mundi)),] #randomly order rows
+Mundi<-Mundi%>%select(-beauty_c,-age_c)
+Mundi$gender<-NULL
+folds<-cut(seq(1:nrow(Mundi)),breaks=10,labels=F) #create folds
+
+
+diags<-NULL
+for(i in 1:10){
+  ## Create training and test sets
+  train<-Mundi[folds!=i,] 
+  test<-Mundi[folds==i,]
+  
+  truth<-test$y ## Truth labels for fold i
+  
+  ## Train model on training set (all but fold i)
+  Fisto<-glm(y~(.),data=train,family="binomial")
+  
+  ## Test model on test set (fold i) 
+  probs3<-predict(Fisto,newdata = test,type="response")
+  
+  ## Get diagnostics for fold i
+  diags<-rbind(diags,class_diag(probs3,truth))
+}
+
+
+summarize_all(diags,mean) #average diagnostics across all k folds
+
+
+#LASSO
+Mundi<-Mundi%>%select(-X)
+y<-as.matrix(Mundi$y)
+x<-model.matrix(y~.,data=Mundi)[,-1]
+x<-scale(x)
+R2D2<-glm(y~(.)^2, data=Mundi, family="binomial")
+
+c3p0<-predict(R2D2,type="response")
+class_diag(c3p0,Mundi$y)
+
+cv <- cv.glmnet(x,y) 
+
+{plot(cv$glmnet.fit, "lambda", label=TRUE); abline(v = log(cv$lambda.1se)); abline(v = log(cv$lambda.min),lty=2)}
+
+
+
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+
+```
+The AUC for the model with multiple variables and no lasso is .716, which is a fair tradeoff between sensitivity and specificity. The AUC for the model with lasso and the multiple variables was .917, which is a great tradeoff between specificity and sensitivity. 
+
+The variables retained were minority,age,beauty,eval,tenure,allstudents.
+
+10 fold CV with LASSO
+```{R}
+Darth<-Beaut%>%mutate(y=ifelse(gender=="female",1,0))
+Darth<-Darth[sample(nrow(Darth)),] #randomly order rows
+Darth<-Darth%>%select(y,minority,age,beauty,eval,tenure,allstudents)
+
+folds<-cut(seq(1:nrow(Darth)),breaks=10,labels=F) #create folds
+
+k=10
+diags<-NULL
+for(i in 1:k){
+  ## Create training and test sets
+  train<-Darth[folds!=i,] 
+  test<-Darth[folds==i,]
+  
+  truth<-test$y ## Truth labels for fold i
+  
+  ## Train model on training set (all but fold i)
+  Maul<-glm(y~(.),data=train,family="binomial")
+  
+  ## Test model on test set (fold i) 
+  quigon<-predict(Maul,newdata = test,type="response")
+  
+  ## Get diagnostics for fold i
+  diags<-rbind(diags,class_diag(quigon,truth))
+}
+
+
+summarize_all(diags,mean) #average diagnostics across all k folds
+
+```
+The 10-fold lassoed CV using only the variables selected has an AUC of .712, which is fair tradeoff between sensitivity and specificity. It is lower than the lassoed 10 fold CV with all the variables included, as well as the unlassoed 10 fold CV with all variables, as well as the CV with only two variables.  
+
+
