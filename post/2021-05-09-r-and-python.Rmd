@@ -1,0 +1,36 @@
+---
+title: R and Python
+author: ''
+date: '2021-05-09'
+slug: r-and-python
+categories: []
+tags: []
+description: ''
+---
+```{R}
+library(reticulate)
+
+hey <- "What's up"
+```
+
+```{python}
+hi ="Not much what about you"
+print(r.hey,hi)
+
+
+```
+```{R}
+Wrong <- "Nothing just sold all my Doge Coin"
+
+
+```
+
+```{python}
+Correct = "What have you done"
+
+```
+
+```{R}
+cat(c(Wrong,py$Correct))
+
+```
