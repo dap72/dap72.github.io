@@ -22,7 +22,7 @@
       <pubDate>Sun, 09 May 2021 00:00:00 +0000</pubDate>
       
       <guid>/post/2021/05/09/r-and-python/</guid>
-      <description> library(reticulate) hey &amp;lt;- &amp;quot;What&amp;#39;s up&amp;quot; hi =&amp;quot;Not much what about you&amp;quot; print(r.hey,hi)  ## What&amp;#39;s up Not much what about you Wrong &amp;lt;- &amp;quot;Nothing just sold all my Doge Coin&amp;quot; Correct = &amp;quot;What have you done&amp;quot; cat(c(Wrong,py$Correct)) ## Nothing just sold all my Doge Coin What have you done </description>
+      <description> A conversation between R and Python library(reticulate) hey &amp;lt;- &amp;quot;What&amp;#39;s up&amp;quot; hi =&amp;quot;Not much what about you&amp;quot; print(r.hey,hi)  ## What&amp;#39;s up Not much what about you Wrong &amp;lt;- &amp;quot;Nothing just sold all my Doge Coin&amp;quot; Correct = &amp;quot;What have you done&amp;quot; cat(c(Wrong,py$Correct)) ## Nothing just sold all my Doge Coin What have you done  </description>
     </item>
     
     <item>

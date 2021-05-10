@@ -154,32 +154,32 @@ library(glmnet)</code></pre>
 ## [451] 4.9 4.9 4.9 4.9 4.9 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0</code></pre>
 <pre class="r"><code>samp1&lt;-sample(Beaut$eval,replace=T)
 sort(samp1)</code></pre>
-<pre><code>##   [1] 2.1 2.1 2.2 2.6 2.7 2.7 2.7 2.8 2.8 2.8 2.8 2.8 2.8 2.8 2.8 2.8 2.9 2.9
-##  [19] 2.9 2.9 2.9 2.9 2.9 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.1 3.1 3.1
-##  [37] 3.1 3.1 3.2 3.2 3.2 3.2 3.2 3.2 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3
+<pre><code>##   [1] 2.2 2.3 2.6 2.6 2.7 2.7 2.7 2.8 2.8 2.8 2.8 2.8 2.8 2.8 2.8 2.9 2.9 2.9
+##  [19] 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.1 3.1 3.1 3.1 3.2 3.2 3.2 3.2 3.2
+##  [37] 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3 3.3
 ##  [55] 3.3 3.3 3.3 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4
-##  [73] 3.4 3.4 3.4 3.4 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5
-##  [91] 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6
-## [109] 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.7 3.7 3.7 3.7 3.7 3.7
-## [127] 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7
-## [145] 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8
-## [163] 3.8 3.8 3.8 3.8 3.8 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9
-## [181] 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 4.0
-## [199] 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0
-## [217] 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.1 4.1
-## [235] 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1
-## [253] 4.1 4.1 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2
-## [271] 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.3 4.3 4.3
-## [289] 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3
-## [307] 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.4 4.4
-## [325] 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4
-## [343] 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5
-## [361] 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.6 4.6 4.6 4.6 4.6 4.6
-## [379] 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6
-## [397] 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7
+##  [73] 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.4 3.5 3.5 3.5 3.5 3.5 3.5
+##  [91] 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.5 3.6 3.6 3.6 3.6 3.6
+## [109] 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6 3.6
+## [127] 3.6 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7
+## [145] 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.7 3.8 3.8 3.8 3.8 3.8
+## [163] 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8 3.8
+## [181] 3.8 3.8 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9
+## [199] 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 3.9 4.0
+## [217] 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0
+## [235] 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0 4.0
+## [253] 4.0 4.0 4.0 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1 4.1
+## [271] 4.1 4.1 4.1 4.1 4.1 4.1 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2
+## [289] 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.2 4.3 4.3
+## [307] 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3 4.3
+## [325] 4.3 4.3 4.3 4.3 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4
+## [343] 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.4 4.5 4.5 4.5 4.5 4.5 4.5
+## [361] 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5 4.5
+## [379] 4.5 4.5 4.5 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6
+## [397] 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.6 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7
 ## [415] 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.7 4.8 4.8
-## [433] 4.8 4.8 4.8 4.8 4.8 4.8 4.8 4.8 4.8 4.9 4.9 4.9 4.9 4.9 4.9 4.9 4.9 4.9
-## [451] 4.9 4.9 4.9 4.9 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0</code></pre>
+## [433] 4.8 4.8 4.8 4.8 4.8 4.8 4.8 4.8 4.8 4.8 4.8 4.8 4.8 4.9 4.9 4.9 4.9 4.9
+## [451] 4.9 4.9 4.9 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0 5.0</code></pre>
 <pre class="r"><code>group&lt;- Beaut$gender
 DVs&lt;-Beaut %&gt;% select(beauty,eval,students,allstudents)
 #Multivariate normality test
@@ -357,7 +357,7 @@ rand_dist[i]&lt;-mean(new[new$gender==&quot;female&quot;,]$attending)-
 {hist(rand_dist,main=&quot;&quot;,ylab=&quot;&quot;); abline(v = c(-8.93, 8.93),col=&quot;red&quot;)}</code></pre>
 <p><img src="../../project/project2_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <pre class="r"><code>mean(rand_dist&gt;8.9 | rand_dist&lt; -8.9)</code></pre>
-<pre><code>## [1] 0.0328</code></pre>
+<pre><code>## [1] 0.035</code></pre>
 <pre class="r"><code>t.test(data=old,attending~gender)</code></pre>
 <pre><code>## 
 ##  Welch Two Sample t-test
@@ -529,16 +529,16 @@ samp_distn&lt;-replicate(5000,{
 })
 #Estimated SE&#39;s
 samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
-<pre><code>##   (Intercept)   beauty_c       age_c beauty_c:age_c
-## 1  0.02488467 0.03095159 0.002525448    0.002982719</code></pre>
+<pre><code>##   (Intercept)  beauty_c       age_c beauty_c:age_c
+## 1  0.02482258 0.0310747 0.002506813    0.003021864</code></pre>
 <pre class="r"><code>samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%pivot_longer(1:3)%&gt;%group_by(name)%&gt;%summarize(lower=quantile(value,.025), upper=quantile(value,.975))</code></pre>
 <pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
 <pre><code>## # A tibble: 3 x 3
 ##   name           lower   upper
 ##   &lt;chr&gt;          &lt;dbl&gt;   &lt;dbl&gt;
 ## 1 (Intercept)  3.97    4.07   
-## 2 age_c       -0.00441 0.00542
-## 3 beauty_c     0.0875  0.211</code></pre>
+## 2 age_c       -0.00430 0.00543
+## 3 beauty_c     0.0885  0.211</code></pre>
 <pre class="r"><code>resid_resamp&lt;-replicate(5000,{
   new_resids&lt;-sample(resids,replace=TRUE)
   Beaut$new_y&lt;-fitted1+new_resids
@@ -549,7 +549,7 @@ samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
 #Estimated SE
 resid_resamp%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
 <pre><code>##   (Intercept)   beauty_c       age_c beauty_c:age_c
-## 1  0.02626198 0.03366312 0.002726838    0.003143338</code></pre>
+## 1  0.02654307 0.03398685 0.002691623    0.003113081</code></pre>
 <pre class="r"><code>#Empirical 95% CI
 resid_resamp%&gt;%t%&gt;%as.data.frame%&gt;%pivot_longer(1:3)%&gt;%group_by(name)%&gt;%summarize(lower=quantile(value,.025), upper=quantile(value,.975))</code></pre>
 <pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
@@ -557,16 +557,16 @@ resid_resamp%&gt;%t%&gt;%as.data.frame%&gt;%pivot_longer(1:3)%&gt;%group_by(name
 ##   name           lower   upper
 ##   &lt;chr&gt;          &lt;dbl&gt;   &lt;dbl&gt;
 ## 1 (Intercept)  3.97    4.07   
-## 2 age_c       -0.00452 0.00608
-## 3 beauty_c     0.0864  0.218</code></pre>
+## 2 age_c       -0.00456 0.00585
+## 3 beauty_c     0.0848  0.217</code></pre>
 <pre class="r"><code>#Bootstrapped (rows)
 samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
-<pre><code>##   (Intercept)   beauty_c       age_c beauty_c:age_c
-## 1  0.02488467 0.03095159 0.002525448    0.002982719</code></pre>
+<pre><code>##   (Intercept)  beauty_c       age_c beauty_c:age_c
+## 1  0.02482258 0.0310747 0.002506813    0.003021864</code></pre>
 <pre class="r"><code>#Bootstrapped (residuals)
 resid_resamp%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
 <pre><code>##   (Intercept)   beauty_c       age_c beauty_c:age_c
-## 1  0.02626198 0.03366312 0.002726838    0.003143338</code></pre>
+## 1  0.02654307 0.03398685 0.002691623    0.003113081</code></pre>
 <p>The bootstrapped SEs observations and rows are larger for the interaction model, meaning they should be chosen over the standard/robust SE’s for the model.</p>
 <p>Logistic regression model (beauty+eval variables)</p>
 <pre class="r"><code>Anakin&lt;-Beaut%&gt;%mutate(y=ifelse(gender==&quot;female&quot;,1,0))
@@ -745,8 +745,8 @@ for(i in 1:10){
 
 
 summarize_all(diags,mean) #average diagnostics across all k folds</code></pre>
-<pre><code>##         acc      sens      spec       ppv       auc
-## 1 0.6437558 0.5047307 0.7450608 0.5970832 0.6931601</code></pre>
+<pre><code>##         acc      sens    spec       ppv      auc
+## 1 0.6462072 0.4956311 0.75756 0.6263735 0.703215</code></pre>
 <pre class="r"><code>#LASSO
 Mundi&lt;-Mundi%&gt;%select(-X)
 y&lt;-as.matrix(Mundi$y)
@@ -766,18 +766,18 @@ class_diag(c3p0,Mundi$y)</code></pre>
 lasso&lt;-glmnet(x,y,family=&quot;binomial&quot;,lambda=cv$lambda.1se)
 coef(lasso)</code></pre>
 <pre><code>## 12 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
-##                          s0
-## (Intercept)   -3.357402e-01
-## minorityyes    6.799729e-05
-## age           -4.360709e-01
-## creditssingle  .           
-## beauty         .           
-## eval          -1.656918e-01
-## divisionupper  .           
-## nativeyes      .           
-## tenureyes     -3.318001e-02
-## students       .           
-## allstudents   -9.730798e-02
+##                        s0
+## (Intercept)   -0.34445325
+## minorityyes    0.03319437
+## age           -0.48454383
+## creditssingle  .         
+## beauty         0.03682361
+## eval          -0.22818415
+## divisionupper  .         
+## nativeyes      .         
+## tenureyes     -0.08652100
+## students       .         
+## allstudents   -0.15006514
 ## prof           .</code></pre>
 <p>The AUC for the model with multiple variables and no lasso is .716, which is a fair tradeoff between sensitivity and specificity. The AUC for the model with lasso and the multiple variables was .917, which is a great tradeoff between specificity and sensitivity.</p>
 <p>The variables retained were minority,age,beauty,eval,tenure,allstudents.</p>
@@ -809,8 +809,8 @@ for(i in 1:k){
 
 
 summarize_all(diags,mean) #average diagnostics across all k folds</code></pre>
-<pre><code>##        acc      sens     spec       ppv       auc
-## 1 0.656568 0.5186617 0.753573 0.6192925 0.7126466</code></pre>
+<pre><code>##         acc      sens     spec       ppv       auc
+## 1 0.6415819 0.4934239 0.759381 0.5994683 0.7171734</code></pre>
 <p>The 10-fold lassoed CV using only the variables selected has an AUC of .712, which is fair tradeoff between sensitivity and specificity. It is lower than the lassoed 10 fold CV with all the variables included, as well as the unlassoed 10 fold CV with all variables, as well as the CV with only two variables.</p>
 
             
